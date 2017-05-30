@@ -20,6 +20,7 @@ $("#add-train-btn").on("click", function(event) {
 	  var trainName = $("#train-name-input").val().trim();
 	  var destination = $("#destination-input").val().trim();
 	  var firstTrain = moment($("#first-train-input").val().trim(), "HH:mm").format("X");
+	  //var firstTrain = $("#first-train-input").val().trim().format("hh:mm");
 	  var frequency = $("#frequency-input").val().trim();
 
   // Creates local "temporary" object for holding employee data
@@ -52,65 +53,59 @@ $("#add-train-btn").on("click", function(event) {
 // 3. Create Firebase event for adding train to the database and a row in the html when a user adds an entry
 database.ref().on("child_added", function(childSnapshot, prevChildKey) {
 
-  console.log(childSnapshot.val());
+  		console.log(childSnapshot.val());
 
   // Store everything into a variable.
-	  var trainName = childSnapshot.val().name;
-	  var trainDestination = childSnapshot.val().destination;
-	  var firstTrainTime = childSnapshot.val().firstTrain;
-	  var trainFrequency = childSnapshot.val().frequency;
+	  	var trainName = childSnapshot.val().name;
+	  	var trainDestination = childSnapshot.val().destination;
+	  	var firstTrainTime = childSnapshot.val().firstTrain;
+	  	var trainFrequency = childSnapshot.val().frequency;
 
-  // Employee Info
-	  console.log("Train Name: ", trainName);
-	  console.log("Train Destination: ",trainDestination);
-	  console.log("First Train Time: ", firstTrainTime);
-	  console.log("Train Frequency: ",trainFrequency);
+  // Train Info
+	  	console.log("Train Name: ", trainName);
+	  	console.log("Train Destination: ",trainDestination);
+	  	console.log("First Train Time: ", firstTrainTime);
+	  	console.log("Train Frequency: ",trainFrequency);
 
   // Prettify the train start
-	  var firstTrainTimePretty = moment.unix(firstTrainTime).format("HH:mm");
-	  console.log("This is prettified unix date: ", firstTrainTimePretty);
+		var firstTrainTimePretty = moment.unix(firstTrainTime).format("HH:mm");
+		console.log("This is prettified unix date: ", firstTrainTimePretty);
 
-	// Calculate the months worked using hardcore math
-	// To calculate the months worked
-	//var empMonths = moment().diff(moment.unix(empStart, "X"), "months");
-	//console.log(empMonths);
+		//Get the train frequency from user input
+		console.log("---------------------------------------------------------------")
+		var tFrequency = trainFrequency;
+		console.log("Train Frequency: ", tFrequency);
 
-	// Calculate the total billed rate
-	//var empBilled = empMonths * empRate;
-	//console.log(empBilled);
-	console.log("---------------------------------------------------------------")
-	var tFrequency = trainFrequency;
-	console.log("Train Frequency: ", tFrequency);
+	    // Train Time from user input
+	    var firstTime = firstTrainTime;
+	    console.log("First Train Time: ", firstTime);
 
-    // Time is 3:30 AM
-    var firstTime = firstTrainTime;
-    console.log("First Train Time: ", firstTime);
+	    // First Time (pushed back 1 year to make sure it comes before current time)
+	    var firstTimeConverted = moment(firstTrainTimePretty, "hh:mm").subtract(1, "years");
+	    //var firstTimeConverted = moment(firstTrain).subtract(1, "years");
+	    console.log("First Time Converted: ", firstTimeConverted);
 
-    // First Time (pushed back 1 year to make sure it comes before current time)
-    var firstTimeConverted = moment(firstTrainTimePretty, "hh:mm").subtract(1, "years");
-    console.log("First Time Converted: ", firstTimeConverted);
+	    // Current Time
+	    var currentTime = moment();
+	    console.log("CURRENT TIME: " + moment(currentTime).format("hh:mm"));
 
-    // Current Time
-    var currentTime = moment();
-    console.log("CURRENT TIME: " + moment(currentTime).format("hh:mm"));
+	    // Difference between the times
+	    console.log("JUST TIME Converted: ", moment(firstTime, "hh:mm"));
+	    var diffTime = moment().diff(moment(firstTimeConverted, "hh:mm"), "minutes");
+	    console.log("DIFFERENCE IN TIME: " + diffTime);
 
-    // Difference between the times
-    console.log("JUST TIME Converted: ", moment(firstTime, "hh:mm"));
-    var diffTime = moment().diff(moment(firstTimeConverted, "hh:mm"), "minutes");
-    console.log("DIFFERENCE IN TIME: " + diffTime);
+	    // Time apart (remainder)
+	    var tRemainder = diffTime % tFrequency;
+	    console.log(tRemainder);
 
-    // Time apart (remainder)
-    var tRemainder = diffTime % tFrequency;
-    console.log(tRemainder);
+	    // Minute Until Train
+	    var tMinutesTillTrain = tFrequency - tRemainder;
+	    console.log("MINUTES TILL TRAIN: " + tMinutesTillTrain);
 
-    // Minute Until Train
-    var tMinutesTillTrain = tFrequency - tRemainder;
-    console.log("MINUTES TILL TRAIN: " + tMinutesTillTrain);
-
-    // Next Train
-    var nextTrain = moment().add(tMinutesTillTrain, "minutes");
-    var nextArrival = moment(nextTrain).format("hh:mm");
-    console.log("ARRIVAL TIME: " + nextArrival);
+	    // Next Train
+	    var nextTrain = moment().add(tMinutesTillTrain, "minutes");
+	    var nextArrival = moment(nextTrain).format("hh:mm");
+	    console.log("ARRIVAL TIME: " + nextArrival);
 
   // Add each train's data into the table
   $("#train-table > tbody").append("<tr><td>" + trainName + "</td><td>" + trainDestination + "</td><td>" +
